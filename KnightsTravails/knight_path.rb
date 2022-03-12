@@ -3,12 +3,16 @@ require_relative '../TreeNode/lib/00_tree_node'
 
 class KnightPathFinder
     
-    def self.valid_moves(pos)
-        x,y = pos
-        if x >= 0 && y >= 0 && x < 8 && y < 8 && !@considered_positions.include?(pos)
-            return true
+    def self.valid_moves(positions, cons_pos)
+        result = []
+        positions.each do |pos|
+            x, y = pos
+            if x >= 0 && y >= 0 && x < 8 && y < 8 \
+                && !cons_pos.include?(pos)
+                result << pos
+            end
         end
-        false
+        return result
     end
 
     def initialize(origin)
@@ -22,22 +26,26 @@ class KnightPathFinder
         end     
     end
 
-    def new_move_positions(pos)
+    def new_move_positions(node)
         result = []
+        pos = node.value
         @possible_moves.each do |move|
-            #current move = pos+move
-            #check if curr_move is valid
-            #if valid we add it to considered positions and the result array
-            #if not then do nothing
-            KnightPathFinder.valid_moves()
+            result << [pos[0] + move[0], pos[1] + move[1]]
         end
-        result
+        result = KnightPathFinder.valid_moves(result, @considered_positions)
+        @considered_positions += result
+        return result.map { |pos| PolyTreeNode.new(pos,node) }
     end
 
     def build_move_tree
-        
+        queue = [@origin]
+        while !queue.empty?
+            curr_node = queue.shift
+            children = new_move_positions(curr_node)
+            curr_node.children = children
+            queue += children
+        end
+        return @origin
     end
 
 end
-
-finder = KnightPathFinder.new([0,0])
